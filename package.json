@@ -36,5 +36,5 @@
   "source": "index.js",
   "umd:main": "build/vega-transform-pg.umd.js",
   "unpkg": "build/vega-transform-pg.umd.js",
-  "version": "0.0.8"
+  "version": "1.0.0"
 }
