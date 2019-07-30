@@ -1,24 +1,40 @@
 {
+  "author": {
+    "name": "Andrew Fichman",
+    "url": "https://www.domoritz.de/"
+  },
+  "bugs": {
+    "url": "https://github.com/heavyairship/vega-transform-pg/issues"
+  },
+  "description": "Vega transform for Postgres.",
+  "devDependencies": {
+    "eslint": "^5.15.1",
+    "microbundle": "^0.11.0"
+  },
+  "homepage": "https://github.com/heavyairship/vega-transform-pg#readme",
+  "jsdelivr": "build/vega-transform-pg.umd.js",
+  "keywords": [
+    "vega",
+    "transform",
+    "postgres"
+  ],
+  "license": "BSD-3-Clause",
+  "main": "build/vega-transform-pg.js",
+  "module": "build/vega-transform-pg.mjs",
   "name": "vega-transform-pg",
-  "version": "1.0.0",
-  "description": "Vega transform for Postgres",
-  "main": "index.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/heavyairship/vega-transform-pg.git"
   },
-  "keywords": [
-    "Vega",
-    "Postgres"
-  ],
-  "author": "Andrew Fichman",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/heavyairship/vega-transform-pg/issues"
-  },
-  "homepage": "https://github.com/heavyairship/vega-transform-pg#readme",
   "scripts": {
+    "build": "microbundle --external vega --name VegaTransformPostgres",
     "lint": "eslint index.js",
-    "publish": "git push"
-  }
+    "postpublish": "git push && git push --tags",
+    "prepublishOnly": "yarn lint && yarn build",
+    "watch": "microbundle watch --external vega --name VegaTransformPostgres"
+  },
+  "source": "index.js",
+  "umd:main": "build/vega-transform-pg.umd.js",
+  "unpkg": "build/vega-transform-pg.umd.js",
+  "version": "0.0.8"
 }
