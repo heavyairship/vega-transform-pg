@@ -30,7 +30,7 @@
     "build": "microbundle --external vega --name VegaTransformPostgres",
     "lint": "eslint index.js",
     "postpublish": "git push && git push --tags",
-    "prepublishOnly": "yarn lint && yarn build",
+    "prepublishOnly": "yarn build",
     "watch": "microbundle watch --external vega --name VegaTransformPostgres"
   },
   "source": "index.js",
