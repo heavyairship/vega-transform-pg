@@ -1,0 +1,24 @@
+{
+  "name": "vega-transform-pg",
+  "version": "1.0.0",
+  "description": "Vega transform for Postgres",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/heavyairship/vega-transform-pg.git"
+  },
+  "keywords": [
+    "Vega",
+    "Postgres"
+  ],
+  "author": "Andrew Fichman",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/heavyairship/vega-transform-pg/issues"
+  },
+  "homepage": "https://github.com/heavyairship/vega-transform-pg#readme",
+  "scripts": {
+    "lint": "eslint index.js",
+    "publish": "git push"
+  }
+}
