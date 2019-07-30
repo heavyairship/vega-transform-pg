@@ -8,21 +8,21 @@ const http = require('http');
  * @param {object} params - The parameters for this operator.
  * @param {function(object): *} params.query - The SQL query.
  */
-export default function PostgresTransform(params) {
+export default function VegaTransformPostgres(params) {
   Transform.call(this, [], params);
 }
 
-PostgresTransform.Definition = {
-  type: "PostgresTransform",
+VegaTransformPostgres.Definition = {
+  type: "VegaTransformPostgres",
   metadata: { changes: true, source: true },
   params: [{ name: "query", type: "string", required: true }]
 };
 
-PostgresTransform.query = function(query) {
+VegaTransformPostgres.query = function(query) {
   this.query = query;
 }
 
-const prototype = inherits(PostgresTransform, Transform);
+const prototype = inherits(VegaTransformPostgres, Transform);
 
 prototype.transform = async function(_, pulse) {
   return new Promise((resolve, reject) => {
