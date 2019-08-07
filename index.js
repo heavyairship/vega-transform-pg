@@ -33,7 +33,6 @@ prototype.transform = async function(_, pulse) {
     throw Error("Vega Transform Postgres query missing. Assign it with setQuery.");
   }
   const result = await new Promise((resolve, reject) => {
-    console.log(_.query);
     const postData = querystring.stringify({'query': _.query});
     VegaTransformPostgres._options['Content-Length'] = Buffer.byteLength(postData)
     const req = http.request(VegaTransformPostgres._options, res => {
@@ -52,7 +51,6 @@ prototype.transform = async function(_, pulse) {
     req.write(postData);
     req.end();
   });
-  console.log(result);
   result.forEach(ingest);
   const out = pulse.fork(pulse.NO_FIELDS & pulse.NO_SOURCE);
   out.rem = this.value;
