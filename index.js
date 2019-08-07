@@ -18,7 +18,7 @@ VegaTransformPostgres.Definition = {
   params: [{ name: "query", type: "string", required: true }]
 };
 
-VegaTransformPostgres.query = function(query) {
+VegaTransformPostgres.setQuery = function(query) {
   this.query = query;
 }
 
