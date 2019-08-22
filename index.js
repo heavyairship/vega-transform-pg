@@ -12,12 +12,20 @@ export default function VegaTransformPostgres(params) {
   Transform.call(this, [], params);
 }
 
-VegaTransformPostgres.setHttpOptions = function(options) {
-  if(options) {
-    this._options = options;
+VegaTransformPostgres.setHttpOptions = function(httpOptions) {
+  if(httpOptions) {
+    this._httpOptions = httpOptions;
     return this;
   }
-  return this._options;
+  return this._httpOptions;
+}
+
+VegaTransformPostgres.setPostgresConnectionString = function(postgresConnectionString) {
+  if(postgresConnectionString) {
+    this._postgresConnectionString = postgresConnectionString;
+    return this;
+  }
+  return this._postgresConnectionString;
 }
 
 VegaTransformPostgres.Definition = {
@@ -29,27 +37,39 @@ VegaTransformPostgres.Definition = {
 const prototype = inherits(VegaTransformPostgres, Transform);
 
 prototype.transform = async function(_, pulse) {
-  if(!VegaTransformPostgres._options) {
-    throw Error("Vega Transform Postgres query missing. Assign it with setQuery.");
+  if(!VegaTransformPostgres._httpOptions) {
+    throw Error("Vega Transform Postgres http options missing. Assign it with setHttpOptions.");
+  }
+  if(!VegaTransformPostgres._postgresConnectionString) {
+    throw Error("Vega Transform Postgres postgres connection string missing. Assign it with setPostgresConnectionString.");
   }
   const result = await new Promise((resolve, reject) => {
-    const postData = querystring.stringify({'query': _.query});
-    VegaTransformPostgres._options['Content-Length'] = Buffer.byteLength(postData)
-    const req = http.request(VegaTransformPostgres._options, res => {
+    const postData = querystring.stringify({
+      query: _.query, 
+      postgresConnectionString: VegaTransformPostgres._postgresConnectionString
+    });
+    VegaTransformPostgres._httpOptions['Content-Length'] = Buffer.byteLength(postData);
+    const req = http.request(VegaTransformPostgres._httpOptions, res => {
       let data = '';
       res.on('data', (chunk) => {
         data += chunk;
       });
       res.on('end', () => {
-        resolve(JSON.parse(data).rows);
+        if(res.statusCode === 400) {
+          reject(`${res.statusMessage}: ${data}`);
+        } else {
+          resolve(JSON.parse(data).rows);
+        }
       });
     });
     req.on('error', err => {
-      console.error(`Error: ${err}`);
-      reject();
+      reject(err);
     });
     req.write(postData);
     req.end();
+  }).catch(err => {
+    console.log(err);
+    return [];
   });
   result.forEach(ingest);
   const out = pulse.fork(pulse.NO_FIELDS & pulse.NO_SOURCE);
