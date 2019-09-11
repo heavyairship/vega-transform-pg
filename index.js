@@ -31,7 +31,12 @@ VegaTransformPostgres.setPostgresConnectionString = function(postgresConnectionS
 VegaTransformPostgres.Definition = {
   type: "postgres",
   metadata: { changes: true, source: true },
-  params: [{ name: "query", type: "string", required: true }]
+  params: [
+    { name: "query", type: "string", required: true },
+    { name: "field", type: "string", required: false },
+    { name: "table", type: "string", required: false },
+    { name: "max_bins", type: "number", required: false }
+  ]
 };
 
 const prototype = inherits(VegaTransformPostgres, Transform);
@@ -43,9 +48,23 @@ prototype.transform = async function(_, pulse) {
   if(!VegaTransformPostgres._postgresConnectionString) {
     throw Error("Vega Transform Postgres postgres connection string missing. Assign it with setPostgresConnectionString.");
   }
+  if(_.query === "bin") {
+    if(typeof _.field !== "string") {
+      throw Error("Vega Transform Postgres bin query requires field param")
+    }
+    if(typeof _.table !== "string") {
+      throw Error("Vega Transform Postgres bin query requires table param")
+    }
+    if(typeof _.max_bins !== "number") {
+      throw Error("Vega Transform Postgres bin query requires max_bins param")
+    }
+  }
   const result = await new Promise((resolve, reject) => {
     const postData = querystring.stringify({
-      query: _.query, 
+      query: _.query,
+      field: _.field,
+      table: _.table,
+      max_bins: _.max_bins,
       postgresConnectionString: VegaTransformPostgres._postgresConnectionString
     });
     VegaTransformPostgres._httpOptions['Content-Length'] = Buffer.byteLength(postData);
