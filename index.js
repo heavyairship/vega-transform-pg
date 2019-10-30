@@ -89,6 +89,7 @@ prototype.transform = async function(_, pulse) {
     console.log(err);
     return [];
   });
+  console.log(JSON.stringify(result));
   result.forEach(ingest);
   const out = pulse.fork(pulse.NO_FIELDS & pulse.NO_SOURCE);
   this.value = out.add = out.source = out.rem = result;
