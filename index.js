@@ -43,74 +43,6 @@ VegaTransformPostgres.Definition = {
 
 const prototype = inherits(VegaTransformPostgres, Transform);
 
-function hasFields(node) {
-  return node._argval 
-    && node._argval.encoders 
-    && node._argval.encoders.enter 
-    && node._argval.encoders.enter.fields
-    && node._argval.encoders.enter.fields.length
-}
-
-function hasSourcePathTo(node, dest) {
-  if(node.source) {
-    if(node.source.id === dest.id) {
-      return true;
-    }
-    return hasSourcePathTo(node.source, dest);
-  }
-  return false;
-}
-
-function isCollectNode(node) {
-  const def = node.__proto__.constructor.Definition;
-  return def && def.type === "Collect";
-}
-
-function upstreamCollectNodeFor(node) {
-  if(isCollectNode(node.source)) {
-    return node.source;
-  }
-  return upstreamCollectNodeFor(node.source);
-}
-
-function collectFields(node, transform) {
-  // FixMe: this function and its subroutines 
-  // can be made more efficient. E.g. get the collect
-  // node on the way to checking if there is a source path
-  // to the transform.
-  let out = {};
-
-  if(hasFields(node) && hasSourcePathTo(node, transform)) {
-    const upstreamCollectNode = upstreamCollectNodeFor(node);
-    out[upstreamCollectNode.id] = {
-      collectNode: upstreamCollectNode,
-      fields: node._argval.encoders.enter.fields
-    }
-  }
-  
-  if(!node._targets) {
-    return out;
-  }
-   
-  for(const target of node._targets) {
-    out = {...out, ...collectFields(target, transform)};
-  }
-  return out;
-}
-
-function queryFor(fields, table) {
-  // FixMe: only projections are implemented right now.
-  let out = "SELECT ";
-  for(let fieldIdx=0; fieldIdx<fields.length; ++fieldIdx) {
-    if(fieldIdx) {
-      out += ", ";
-    }
-    out += fields[fieldIdx];
-  }
-  out += ` FROM ${table};`
-  return out;
-}
-
 prototype.transform = async function(_, pulse) {
   if(!VegaTransformPostgres._httpOptions) {
     throw Error("Vega Transform Postgres http options missing. Assign it with setHttpOptions.");
@@ -129,24 +61,9 @@ prototype.transform = async function(_, pulse) {
       throw Error("Vega Transform Postgres bin query requires max_bins param")
     }
   }
-
-  // FixMe: need to handle multiple entries, not just one.
-  // To do that, I have to figure out a way to use async
-  // calls in a loop without getting this error:
-  // 
-  // 'babel-plugin-transform-async-to-promises/helpers' is imported by index.js, but could not be resolved – treating it as an external dependency
-  // Error: Could not load babel-plugin-transform-async-to-promises/helpers (imported by /Users/afichman/Desktop/Projects/scalable-vega/node_modules/vega-transform-pg/index.js): ENOENT: no such file or directory, open 'babel-plugin-transform-async-to-promises/helpers'
-  //
-  // Or, I can just chain promises with then().
-  
-  const fields = collectFields(this, this);
-  const collectNodeId = Object.keys(fields)[0];
-  const entry = fields[collectNodeId];
-  const query = queryFor(entry.fields, _.table);
-
   const result = await new Promise((resolve, reject) => {
     const postData = querystring.stringify({
-      query: query,
+      query: _.query,
       postgresConnectionString: VegaTransformPostgres._postgresConnectionString
     });
     VegaTransformPostgres._httpOptions['Content-Length'] = Buffer.byteLength(postData);
@@ -172,12 +89,6 @@ prototype.transform = async function(_, pulse) {
     console.log(err);
     return [];
   });
-
-  //FixMe: figure out how to make this work at the collect level
-  //result.forEach(ingest);
-  //entry.collectNode.value = out.add = out.source = out.rem = result;
-  //const out = pulse.fork(pulse.NO_FIELDS & pulse.NO_SOURCE);
-  
   result.forEach(ingest);
   const out = pulse.fork(pulse.NO_FIELDS & pulse.NO_SOURCE);
   this.value = out.add = out.source = out.rem = result;
