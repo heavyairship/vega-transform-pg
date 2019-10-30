@@ -32,12 +32,7 @@ VegaTransformPostgres.Definition = {
   type: "postgres", // FixMe: make uppercase
   metadata: { changes: true, source: true },
   params: [
-    { name: "query", type: "string", required: false },
-    { name: "field", type: "string", required: false },
-    { name: "table", type: "string", required: false }, // FixMe: rename to "relation"
-    { name: "max_bins", type: "number", required: false },
-    { name: "anchor", type: "signal", required: false},
-    { name: "step", type: "signal", required: false}
+    { name: "relation", type: "string", required: true }
   ]
 };
 
@@ -50,20 +45,12 @@ prototype.transform = async function(_, pulse) {
   if(!VegaTransformPostgres._postgresConnectionString) {
     throw Error("Vega Transform Postgres postgres connection string missing. Assign it with setPostgresConnectionString.");
   }
-  if(_.query === "bin") {
-    if(typeof _.field !== "string") {
-      throw Error("Vega Transform Postgres bin query requires field param")
-    }
-    if(typeof _.table !== "string") {
-      throw Error("Vega Transform Postgres bin query requires table param")
-    }
-    if(typeof _.max_bins !== "number") {
-      throw Error("Vega Transform Postgres bin query requires max_bins param")
-    }
+  if(!this._query) {
+    throw Error("Internal error: this._query should be defined");
   }
   const result = await new Promise((resolve, reject) => {
     const postData = querystring.stringify({
-      query: _.query,
+      query: this._query,
       postgresConnectionString: VegaTransformPostgres._postgresConnectionString
     });
     VegaTransformPostgres._httpOptions['Content-Length'] = Buffer.byteLength(postData);
@@ -86,7 +73,7 @@ prototype.transform = async function(_, pulse) {
     req.write(postData);
     req.end();
   }).catch(err => {
-    console.log(err);
+    console.error(err);
     return [];
   });
   result.forEach(ingest);
