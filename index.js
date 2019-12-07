@@ -3,10 +3,9 @@ const querystring = require('querystring');
 const http = require('http');
 
 /**
- * Generates a function to query data from an Postgres database.
+ * Queries data from an Postgres database.
  * @constructor
  * @param {object} params - The parameters for this operator.
- * @param {function(object): *} params.query - The SQL query.
  */
 export default function VegaTransformPostgres(params) {
   Transform.call(this, [], params);
