@@ -3,7 +3,7 @@ const querystring = require('querystring');
 const http = require('http');
 
 /**
- * Queries data from an Postgres database.
+ * Queries data from a Postgres database.
  * @constructor
  * @param {object} params - The parameters for this operator.
  */
